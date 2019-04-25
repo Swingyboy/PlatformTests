@@ -5,9 +5,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException
 from windows import LoginWindow, MainWindow
-from windows.dialogWindow import WarningWindow, ExitWindow, CopyUserSettingsWindow
+from windows.dialogWindow.dialogWindows import WarningWindow, ExitWindow, CopyUserSettingsWindow
 from windows.browseWindow import UserProfileBrowse
-from windows.mainWindow import UserMaint, ResetPasswordWindow
+from windows.maintWindow.maints import UserMaint
+from windows.selectWindow.ResetPasswordWindow import ResetPassworWindow
 
 
 class TestFirstRun():
@@ -26,33 +27,33 @@ class TestFirstRun():
     def test_start_apipro(self, startUp):
         loginPage = LoginWindow.LoginPage(self.driver)
 
-        userLabel = loginPage.getUserLabel()
+        userLabel = loginPage.get_user_label()
         assert userLabel == 'User ID:'
 
-        passwordLabel = loginPage.getPasswordLabel()
+        passwordLabel = loginPage.get_password_label()
         assert passwordLabel == 'Password:'
 
-        languageLabel = loginPage.getLanguageLabel()
+        languageLabel = loginPage.get_language_label()
         assert languageLabel == 'Language:'
 
-        languageDropDown = loginPage.getLanguageValue()
+        languageDropDown = loginPage.get_language_value()
         assert languageDropDown
 
-        checkBoxLabel = loginPage.getCheckBoxLable()
+        checkBoxLabel = loginPage.get_checkbox_lable()
         assert checkBoxLabel == 'Remember me'
 
-        if loginPage.getCheckBoxValue() == 'Off':
-            loginPage.setCheckBoxValue()
+        if loginPage.get_checkbox_value() == 'Off':
+            loginPage.set_checkbox_value()
 
         loginPage.login(self.user, self.password)
         time.sleep(2)
         try:
-            warningPage = WarningWindow.WarningPage(loginPage.window)
+            warningPage = WarningWindow(loginPage.window)
         except WebDriverException:
             warningPage = None
 
         if warningPage:
-            warningPage.close()
+            warningPage.confirm()
 
         time.sleep(2)
 
@@ -61,12 +62,12 @@ class TestFirstRun():
 
         time.sleep(2)
         try:
-            exitPage = ExitWindow.ExitPage(self.driver)
+            exitPage = ExitWindow(self.driver)
         except WebDriverException:
             exitPage = None
 
         if exitPage:
-            exitPage.close()
+            exitPage.shutdown()
 
         time.sleep(2)
         driver = webdriver.Remote(command_executor='http://localhost:9999',
@@ -76,16 +77,16 @@ class TestFirstRun():
 
         loginPage = LoginWindow.LoginPage(driver)
 
-        userID = loginPage.getUserValue()
+        userID = loginPage.get_user_value()
         assert userID.lower() == self.user.lower()
 
-        passwrd = loginPage.getPasswordValue()
+        passwrd = loginPage.get_password_value()
         assert  passwrd == self.password
 
-        language = loginPage.getLanguageValue()
+        language = loginPage.get_language_value()
         assert language == 'English'
 
-        loginPage.clickCancelButon()
+        loginPage.click_cancel_buton()
 
 
     def test_login_as_supervisor(self, startUp):
@@ -93,28 +94,28 @@ class TestFirstRun():
         loginPage.login('supervisor', '')
         time.sleep(2)
         try:
-            warningPage = WarningWindow.WarningPage(loginPage.window)
+            warningPage = WarningWindow(loginPage.window)
         except WebDriverException:
             warningPage = None
 
         if warningPage:
-            warningPage.close()
+            warningPage.confirm()
         time.sleep(2)
 
         mainWindow = MainWindow.MainWindow(self.driver)
 
-        assert mainWindow.getTitle() == 'API PRO 9 - 9.0SP00C - QA [SUPERVISOR]'
+        assert mainWindow.get_title() == 'API PRO 9 - 9.0SP00C - QA [SUPERVISOR]'
 
         mainWindow.close()
 
         time.sleep(2)
         try:
-            exitPage = ExitWindow.ExitPage(self.driver)
+            exitPage = ExitWindow(self.driver)
         except WebDriverException:
             exitPage = None
 
         if exitPage:
-            exitPage.close()
+            exitPage.shutdown()
 
 
     def test_create_test_user(self, startUp):
@@ -122,45 +123,52 @@ class TestFirstRun():
         loginPage.login('supervisor', '')
         time.sleep(2)
         try:
-            warningPage = WarningWindow.WarningPage(loginPage.window)
+            warningPage = WarningWindow(loginPage.window)
         except WebDriverException:
             warningPage = None
 
         if warningPage:
-            warningPage.close()
+            warningPage.confirm()
         time.sleep(2)
 
         mainWindow = MainWindow.MainWindow(self.driver)
         time.sleep(2)
 
-        systemItem = mainWindow.getMenuItem('Menu Bar', 'System')
-        userMenu = mainWindow.getMenuItem('System', 'User')
-        userProfileItem = mainWindow.getMenuItem('User', 'User profile manager')
+        systemItem = mainWindow.get_menu_item('Menu Bar', 'System')
+        userMenu = mainWindow.get_menu_item('System', 'User')
+        userProfileItem = mainWindow.get_menu_item('User', 'User profile manager')
         userProfileItem.click()
-        time.sleep(5)
+        time.sleep(12)
 
         userProfileWindow = UserProfileBrowse.UserProfileBrowse(self.driver)
-        newButton = userProfileWindow.getMenuItem('Toolbar', 'New')
+        newButton = userProfileWindow.get_menu_item('Toolbar', 'New')
         newButton.click()
         time.sleep(5)
 
-        userMaintWindow = UserMaint.UserMaint(userProfileWindow.window)
-        userMaintWindow.setField('API user:', 'SBE9')
-        userMaintWindow.setField('User group:', 'SYSTEM')
-        userMaintWindow.setDropDown('License:', 'Full named license')
-        saveButton = userProfileWindow.getMenuItem('Toolbar', 'Save')
+        userMaintWindow = UserMaint(userProfileWindow.window)
+        userMaintWindow.create_supervisor_user('SBE9')
+        saveButton = userProfileWindow.get_menu_item('Toolbar', 'Save')
         saveButton.click()
         time.sleep(2)
 
-        dialogWindow = CopyUserSettingsWindow.CopyUserSettingsWindow(userMaintWindow.window)
-        noButton = dialogWindow.getButton('No')
-        noButton.click()
+        dialogWindow = CopyUserSettingsWindow(userMaintWindow.window)
+        dialogWindow.copy_setting(False)
         time.sleep(2)
 
-        passwordWindow = ResetPasswordWindow.ResetPassworWindow(userMaintWindow.window)
-        passwordWindow.setCheckbox('Prompt user for new password at next login')
-        okButton = passwordWindow.getButton('OK')
+        passwordWindow = ResetPassworWindow(userMaintWindow.window)
+        assert passwordWindow
+
+'''    def test_assign_password_to_the_test_user(self):
+        passwordWindow = ResetPassworWindow(userMaintWindow.window)
+        passwordWindow.set_checkbox('Prompt user for new password at next login')
+        okButton = passwordWindow.get_button('OK')
         okButton.click()
+'''
+
+
+
+
+
 
 
 

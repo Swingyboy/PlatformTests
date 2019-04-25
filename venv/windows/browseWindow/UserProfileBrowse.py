@@ -5,10 +5,10 @@ class UserProfileBrowse():
     def __init__(self, driver):
         self.window = driver.find_element(By.NAME, 'User Profile Manager')
 
-    def getTitle(self):
+    def get_title(self):
         return self.window.get_attribute('Name')
 
-    def getMenuItem(self, menu, item):
+    def get_menu_item(self, menu, item):
         menuBar = self.window.find_element(By.NAME, menu)
         menuBar.click()
         return menuBar.find_element(By.NAME, item)
