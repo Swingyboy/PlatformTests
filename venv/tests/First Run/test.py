@@ -1,14 +1,17 @@
+import time
 import pytest
 import selenium
-import time
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException
+
 from windows import LoginWindow, MainWindow
 from windows.dialogWindow.dialogWindows import WarningWindow, ExitWindow, MessageWindow, CopyUserSettingsWindow
-from windows.browseWindow import UserProfileBrowse
-from windows.maintWindow.maints import UserMaint
+from windows.browseWindow.browsers import UserProfileBrowse, UserSiterRights
+from windows.maintWindow.maints import UserMaint, UserSiteCombinationMaint
 from windows.selectWindow.ResetPasswordWindow import ResetPassworWindow
+from windows.apicbfWindow.apicbfs import UserPermissionsWindow, PropertiesWindow
 
 
 @pytest.fixture()
@@ -72,7 +75,7 @@ def test_start_apipro(startUp):
 
     driver = webdriver.Remote(command_executor='http://localhost:9999',
                               desired_capabilities={'debugConnectToRunningApp': 'false','app': APPLICATION_PATH})
-    time.sleep(2)
+    time.sleep(5)
 
     loginPage = LoginWindow.LoginPage(driver)
     userID = loginPage.get_user_value()
@@ -101,7 +104,7 @@ def test_login_as_supervisor(startUp):
     time.sleep(2)
 
     mainWindow = MainWindow.MainWindow(driver)
-    assert mainWindow.get_title() == 'API PRO 9 - 9.0SP00C - QA [SUPERVISOR]'
+    assert '[SUPERVISOR]' in mainWindow.get_title()
 
 
 def test_create_test_user():
@@ -112,9 +115,9 @@ def test_create_test_user():
     userMenu = mainWindow.get_menu_item('System', 'User')
     userProfileItem = mainWindow.get_menu_item('User', 'User profile manager')
     userProfileItem.click()
-    time.sleep(12)
+    time.sleep(15)
 
-    userProfileWindow = UserProfileBrowse.UserProfileBrowse(DRIVER)
+    userProfileWindow = UserProfileBrowse(DRIVER)
     userProfileWindow.click_button('New')
     time.sleep(5)
 
@@ -136,6 +139,7 @@ def test_assign_password_to_the_test_user():
     passwordWindow.set_checkbox('Prompt user for new password at next login')
     okButton = passwordWindow.get_button('OK')
     okButton.click()
+    time.sleep(5)
     messageWind = MessageWindow(DRIVER)
     assert messageWind
     messageWind.confirm()
@@ -153,6 +157,53 @@ def test_set_approval_rights_to_the_test_user():
     assert userMaintWindow.get_value('API user:') == 'SBE9'
     userMaintWindow.close()
 
+
+def test_give_full_rights_for_the_test_user():
+    userProfileWindow = UserProfileBrowse(DRIVER)
+    userProfileWindow.select_user('SBE9')
+    userProfileWindow.click_button('Permissions')
+    time.sleep(5)
+    permissionWindow = UserPermissionsWindow(DRIVER)
+    assert permissionWindow
+    permissionWindow.get_full_permission()
+    time.sleep(20)
+    permissionWindow.close()
+    userProfileWindow.click_button('Site rights')
+    time.sleep(5)
+    siteRightsWin = UserSiterRights(DRIVER, 'SBE9', 'system')
+    assert siteRightsWin
+    siteRightsWin.click_button('New')
+    time.sleep(5)
+    userSiteWin = UserSiteCombinationMaint(siteRightsWin.window)
+    assert userSiteWin
+    userSiteWin.click_radio_button('All sites')
+    userSiteWin.set_field_value('Full/View:', 'Full')
+    userSiteWin.click_button('Save')
+    siteRightsWin.close()
+    userProfileWindow.close()
+
+
+def test_in_Maintenance_module_configuration_turn_on_WO_approval():
+    mainWindow = MainWindow.MainWindow(DRIVER)
+    systemItem = mainWindow.get_menu_item('Menu Bar', 'System')
+    confMenu = mainWindow.get_menu_item('System', 'System configuration')
+    systemConfigItem = mainWindow.get_menu_item('System configuration', 'Properties explorer')
+    systemConfigItem.click()
+    time.sleep(5)
+    properWin = PropertiesWindow(DRIVER)
+    properWin.maximize()
+    properWin.open_tree_item('Basic module')
+    time.sleep(5)
+    properWin.open_tree_item('Bar code configuration')
+    pass
+
+
+def test_in_Purchase_module_configuration_turn_on_PO_approval():
+    pass
+
+
+def test_sign_out():
+    pass
 
 
 

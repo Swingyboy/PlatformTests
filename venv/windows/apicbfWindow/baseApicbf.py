@@ -1,8 +1,8 @@
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException as Error
-from pynput.keyboard import Key, Controller
 
-class Browser():
+
+class Apicbf():
 
     def __init__(self, driver, name):
         self.window = driver.find_element(By.NAME, name)
@@ -20,10 +20,6 @@ class Browser():
         return item
 
 
-    def _get_filter(self):
-        return self._find_item(self.window, 'QuickFilter', 'NAME')
-
-
     def click_button(self, name):
         button = self._find_item(self.window, name, 'NAME')
         button.click()
@@ -31,30 +27,6 @@ class Browser():
 
     def get_title(self):
         return self.window.get_attribute('Name')
-
-
-    def filter_ok(self):
-        button = _find_item(self._get_filter, 'OK', 'NAME')
-        button.click()
-
-
-    def filter_clear(self):
-        button = _find_item(self._get_filter, 'Clear', 'NAME')
-        button.click()
-
-
-    def filter_load(self):
-        button = _find_item(self._get_filter, 'Load', 'NAME')
-        button.click()
-
-
-    def filter_items(self, value):
-        quick_filter = self._get_filter()
-        filter_field = self._find_item(quick_filter, 'RichEdit20W', 'CLASS')
-        filter_field.send_keys(value)
-        kb = Controller()
-        kb.press(Key.enter)
-        kb.release(Key.enter)
 
 
     def close(self):
@@ -79,4 +51,3 @@ class Browser():
             minButton.click()
         except Error:
             print('Unable to minimize this window! There is no MINIMIZE button!')
-

@@ -1,5 +1,13 @@
-from windows.maintWindow.baseMaint import Maint
 from selenium.common.exceptions import WebDriverException as Error
+from windows.maintWindow.baseMaint import Maint
+from pynput.mouse import Button
+from pynput.mouse import Controller as Mouse
+
+def mouse_move_left(mouse, value):
+    x, y = mouse.position
+    x -= value
+    mouse.position = (x, y)
+
 
 class UserMaint(Maint):
 
@@ -39,8 +47,7 @@ class UserMaint(Maint):
 
     def create_supervisor_user(self, name):
         fields = {'Main':
-                      {'Name:': 'Test supervisor user',
-                       'Contact person:': 'Festo sales'},
+                      {'Name:': 'Test supervisor user'},
                   'Approval':{},
                   'Extra setup':
                       {'Recent values:': 5},
@@ -165,6 +172,21 @@ class UserMaint(Maint):
                       'Extra info': {}
                       }
         self.set_rights(name, field_values, checkbox_values)
+
+
+class UserSiteCombinationMaint(Maint):
+
+    def __init__(self, driver):
+        Maint.__init__(self, driver, 'User - site combination')
+        self.tabs = ['Main', 'Approval', 'Extra setup', 'PDA setup', 'Extra info']
+
+
+    def click_radio_button(self, name):
+        radioButton = self._find_item(self.window, name, 'NAME')
+        radioButton.click()
+        mouse = Mouse()
+        mouse_move_left(mouse, 20)
+        mouse.click(Button.left)
 
 
 
