@@ -1,8 +1,7 @@
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException as Error
 
-
-class DialogWindow():
+class Browser():
 
     def __init__(self, driver, name):
         self.window = driver.find_element(By.NAME, name)
@@ -20,30 +19,38 @@ class DialogWindow():
         return item
 
 
-    def click_button(self, button):
-        button = self._find_item(self.window, button, 'NAME')
+    def _get_filter(self):
+        return self._find_item(self.window, 'QuickFilter', 'NAME')
+
+
+    def click_button(self, name):
+        button = self._find_item(self.window, name, 'NAME')
         button.click()
 
 
-    def get_checkbox_value(self, id, search = 'NAME'):
-        chbox = self._find_item(self.window, id, search)
-        return chbox, chbox.is_selected()
+    def get_title(self):
+        return self.window.get_attribute('Name')
 
 
-    def set_checkbox_value(self, id, value:bool, search = 'NAME'):
-        chbox, chboxValue = self.get_checkbox_value(id, search)
-        if chboxValue == value:
-            pass
-        else:
-            chbox.click()
+    def filter_ok(self):
+        button = _find_item(self._get_filter, 'OK', 'NAME')
+        button.click()
 
 
-    def set_radiobutton_value(self, id, search = 'NAME'):
-        button, value = self.get_checkbox_value(id, search)
-        if value == True:
-            pass
-        else:
-            button.click()
+    def filter_clear(self):
+        button = _find_item(self._get_filter, 'Clear', 'NAME')
+        button.click()
+
+
+    def filter_load(self):
+        button = _find_item(self._get_filter, 'Load', 'NAME')
+        button.click()
+
+
+    def filter_items(self, field, value, operator):
+        qfil = self._get_filter()
+        filterOn = self._find_item(qfil, 'Field to filter on', 'NAME')
+        filterOn.click()
 
 
     def close(self):
@@ -68,3 +75,4 @@ class DialogWindow():
             minButton.click()
         except Error:
             print('Unable to minimize this window! There is no MINIMIZE button!')
+

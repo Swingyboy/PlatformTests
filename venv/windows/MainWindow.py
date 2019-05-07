@@ -7,6 +7,17 @@ class MainWindow():
     def __init__(self, driver):
         self.window = driver.find_element(By.CLASS_NAME, 'ProMainWin')
 
+    def _find_item(self, win, item_id, id_type):
+        if id_type == 'NAME':
+            item = win.find_element(By.NAME, item_id)
+        elif id_type == 'ID':
+            item = win.find_element(By.ID, item_id)
+        elif id_type == 'CLASS':
+            item = win.find_element(By.CLASS_NAME, item_id)
+        else:
+            raise  Exception('Wrong search type!')
+        return item
+
     def get_title(self):
         return self.window.get_attribute('Name')
 

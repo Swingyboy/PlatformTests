@@ -2,11 +2,22 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException as Error
 from pynput.keyboard import Key, Controller
 
+
+def str_to_bool(string:str)->bool:
+    if string in ['TRUE', 'True', 'true']:
+        return True
+    elif string in ['FALSE', 'False', 'false']:
+        return False
+    else:
+        raise ValueError('Wrong string!!!')
+
+
 class Maint():
 
     def __init__(self, driver, name):
         self.window = driver.find_element(By.NAME, name)
         self.tabs = []
+
 
     def _find_item(self, win, item_id, id_type):
         if id_type == 'NAME':
@@ -19,11 +30,13 @@ class Maint():
             raise  Exception('Wrong search type!')
         return item
 
+
     def click_pns_button(self, name):
         field = self._find_item(self.window, name, 'NAME')
         id = int(field.get_attribute('AutomationId')) + 1
         button = self._find_item(self.window, id, 'ID')
         button.click()
+
 
     def click_tree_button(self, name):
         field = self._find_item(self.window, name, 'NAME')
@@ -31,21 +44,31 @@ class Maint():
         button = self._find_item(self.window, id, 'ID')
         button.click()
 
+
     def click_button(self, name):
         button = self._find_item(self.window, name, 'NAME')
         button.click()
 
+
+    def element_is_enable(self, name):
+        el = self._find_item(self.window, name, 'NAME')
+        return str_to_bool(el.get_attribute('IsEnabled'))
+
+
     def get_checkbox_value(self, id, search = 'NAME'):
         chbox = self._find_item(self.window, id, search)
         return chbox, chbox.is_selected()
+
 
     def get_menu_item(self, menu, item):
         menuBar = self.window.find_element(By.NAME, menu)
         menuBar.click()
         return menuBar.find_element(By.NAME, item)
 
+
     def get_title(self):
         return self.window.get_attribute('Name')
+
 
     def get_value(self, field, search = 'NAME'):
         field = self._find_item(self.window, field, search)
@@ -53,12 +76,14 @@ class Maint():
         field = self._find_item(self.window, id, 'ID')
         return field.get_attribute('Name')
 
+
     def set_checkbox_value(self, id, value:bool, search = 'NAME'):
         chbox, chboxValue = self.get_checkbox_value(id, search)
         if chboxValue == value:
             pass
         else:
             chbox.click()
+
 
     def set_dropdown_value(self, field, value, search = 'NAME'):
         field = self._find_item(self.window, field, search)
@@ -68,11 +93,13 @@ class Maint():
         item = self._find_item(field, value, 'NAME')
         item.click()
 
+
     def set_field_value(self, field, value, search = 'NAME'):
         field = self._find_item(self.window, field, search)
         id = int(field.get_attribute('AutomationId')) - 1
         field = self._find_item(self.window, id, 'ID')
         field.send_keys(value)
+
 
     def switch_tab(self):
         self.window.click()
@@ -82,6 +109,14 @@ class Maint():
         keyboard.release(Key.tab)
         keyboard.release(Key.ctrl)
 
+
+    def click_tab(self):
+        self.window.click()
+        keyboard = Controller()
+        keyboard.press(Key.tab)
+        keyboard.release(Key.tab)
+
+
     def close(self):
         try:
             closeButton = self._find_item(self.window, 'Close', 'ID')
@@ -89,12 +124,14 @@ class Maint():
         except Error:
             print('Unable to close this window! There is no CLOSE button!')
 
+
     def maximize(self):
         try:
             maxButton = self._find_item(self.window, 'Maximize', 'ID')
             maxButton.click()
         except Error:
             print('Unable to maximize this window! There is no MAXIMIZE button!')
+
 
     def minimize(self):
         try:
